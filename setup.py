@@ -32,6 +32,7 @@ setup(
         "diskcache",
         "gptcache",
         "openai>=0.27",
+        "anthropic",
         "parsimonious",
         "pygtrie",
         "platformdirs",
