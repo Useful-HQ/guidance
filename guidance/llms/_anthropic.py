@@ -289,7 +289,7 @@ def merge_stream_chunks(first_chunk, second_chunk):
 
 # Define a deque to store the timestamps of the calls
 class AnthropicSession(LLMSession):
-    async def __call__(self, prompt, stop=None, stop_regex=None, temperature=None, n=1, max_tokens_to_sample=1000, logprobs=None,
+    async def __call__(self, prompt, stop=None, stop_regex=None, temperature=None, n=1, max_tokens=1000, logprobs=None,
                        top_p=1.0, echo=False, logit_bias=None, token_healing=None, pattern=None, stream=None,
                        cache_seed=0, caching=None, **completion_kwargs):
         """ Generate a completion of the given prompt.
@@ -340,7 +340,7 @@ class AnthropicSession(LLMSession):
                     call_args = {
                         "model": self.llm.model_name,
                         "prompt": prompt,
-                        "max_tokens_to_sample": max_tokens_to_sample,
+                        "max_tokens_to_sample": max_tokens,
                         "temperature": temperature,
                         "top_p": top_p,
                         "n": n,
