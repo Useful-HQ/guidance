@@ -16,27 +16,6 @@ from ._llm import LLM, LLMSession, SyncSession
 class MalformedPromptException(Exception):
     pass
 
-
-def prompt_to_messages(prompt):
-    messages = []
-
-    assert prompt.endswith(
-        "<|im_start|>assistant\n"), "When calling OpenAI chat models you must generate only directly inside the assistant role! The OpenAI API does not currently support partial assistant prompting."
-
-    pattern = r'<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)'
-    matches = re.findall(pattern, prompt, re.DOTALL)
-
-    if not matches:
-        return [{'role': 'user', 'content': prompt.strip()}]
-
-    for match in matches:
-        role, content = match
-        content = content.strip()  # should we do this?
-        messages.append({'role': role, 'content': content})
-
-    return messages
-
-
 async def add_text_to_chat_mode_generator(chat_mode):
     async for resp in chat_mode:
         if "choices" in resp:
@@ -124,11 +103,14 @@ class Anthropic(LLM):
 
     def role_start(self, role):
         assert self.chat_mode, "role_start() can only be used in chat mode"
-        return role + "\n"
+        if role != "assistant":
+            return anthropic.HUMAN_PROMPT
+        else:
+            return anthropic.AI_PROMPT
 
     def role_end(self, role=None):
         assert self.chat_mode, "role_end() can only be used in chat mode"
-        return
+        return ""
 
     def end_of_text(self):
         return ""
@@ -251,7 +233,13 @@ class Anthropic(LLM):
         """
         assert self.api_key is not None, "You must provide an Anthropic API key to use the Antrhopic LLM. Either pass it in the constructor, set the OPENAI_API_KEY environment variable, or create the file ~/.openai_api_key with your key in it."
 
-        kwargs["prompt"] = f'{anthropic.HUMAN_PROMPT}{kwargs["prompt"]}{anthropic.AI_PROMPT}'
+        kwargs["prompt"] = kwargs["prompt"].rstrip()
+
+        if not kwargs["prompt"].startswith(anthropic.HUMAN_PROMPT):
+            kwargs["prompt"] = anthropic.HUMAN_PROMPT + kwargs["prompt"]
+
+        if not kwargs["prompt"].endswith(anthropic.AI_PROMPT):
+            kwargs["prompt"] = kwargs["prompt"] + anthropic.AI_PROMPT
 
         if kwargs["stream"]:
             session = aiohttp.ClientSession()
