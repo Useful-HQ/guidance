@@ -90,13 +90,13 @@ class BinOp(OpNode):
         self.rhs = tokens[0][2]
         self.name = "binary_operator"
 
-infix_operator_block = pp.infix_notation(code_chunk_no_infix, [
+infix_operator_block = pp.infixNotation(code_chunk_no_infix, [
     ('-', 1, pp.OpAssoc.RIGHT),
-    (pp.one_of('* /'), 2, pp.OpAssoc.LEFT, BinOp),
-    (pp.one_of('+ -'), 2, pp.OpAssoc.LEFT, BinOp),
-    (pp.one_of('< > <= >= == != is in'), 2, pp.OpAssoc.LEFT, BinOp),
-    (pp.one_of('and'), 2, pp.OpAssoc.LEFT, BinOp),
-    (pp.one_of('or'), 2, pp.OpAssoc.LEFT, BinOp),
+    (pp.oneOf('* /'), 2, pp.OpAssoc.LEFT, BinOp),
+    (pp.oneOf('+ -'), 2, pp.OpAssoc.LEFT, BinOp),
+    (pp.oneOf('< > <= >= == != is in'), 2, pp.OpAssoc.LEFT, BinOp),
+    (pp.oneOf('and'), 2, pp.OpAssoc.LEFT, BinOp),
+    (pp.oneOf('or'), 2, pp.OpAssoc.LEFT, BinOp),
 ])
 
 
@@ -135,7 +135,7 @@ class SavedTextNode:
     def __call__(self, *args, **kwds):
         return self.tokens(*args, **kwds)
 def SavedText(node):
-    return pp.Located(node).add_parse_action(SavedTextNode)
+    return pp.Located(node).addParseAction(SavedTextNode)
 
 # command arguments
 command_arg = pp.Forward()
@@ -147,7 +147,7 @@ ws_command_call = pp.Forward().setName("ws_command_call")
 command_arg_and_ws = pp.Suppress(ws) + command_arg
 ws_command_args = pp.OneOrMore(command_arg_and_ws)
 # note that we have to list out all the operators here because we match before the infix operator checks
-ws_command_call <<= command_name("name") + ~pp.FollowedBy(pp.one_of("+ - * / or not is and <= == >= != < >")) + ws_command_args
+ws_command_call <<= command_name("name") + ~pp.FollowedBy(pp.oneOf("+ - * / or not is and <= == >= != < >")) + ws_command_args
 
 # paren command format {{my_command(arg1, arg2=val)}}
 paren_command_call = pp.Forward().setName("paren_command_call")
@@ -158,16 +158,16 @@ paren_command_call <<= (command_name("name") + pp.Suppress("(")).leave_whitespac
 # code chunks
 enclosed_code_chunk = pp.Forward().setName("enclosed_code_chunk")
 paren_group = (pp.Suppress("(") - enclosed_code_chunk + pp.Suppress(")")).setName("paren_group")
-enclosed_code_chunk_cant_infix = (pp.Group(ws_command_call)("command_call") | pp.Group(paren_command_call)("command_call") | literal | keyword | variable_ref | paren_group) + ~pp.FollowedBy(pp.one_of("+ - * / or not is and <= == >= != < >"))
+enclosed_code_chunk_cant_infix = (pp.Group(ws_command_call)("command_call") | pp.Group(paren_command_call)("command_call") | literal | keyword | variable_ref | paren_group) + ~pp.FollowedBy(pp.oneOf("+ - * / or not is and <= == >= != < >"))
 enclosed_code_chunk <<= enclosed_code_chunk_cant_infix | infix_operator_block
 code_chunk_no_infix <<= (paren_group | pp.Group(paren_command_call)("command_call") | literal | keyword | variable_ref) # used by infix_operator_block
-code_chunk_cant_infix = code_chunk_no_infix + ~pp.FollowedBy(pp.one_of("+ - * / or not is and <= == >= != < >")) # don't match infix operators so we can run this before infix_operator_block
+code_chunk_cant_infix = code_chunk_no_infix + ~pp.FollowedBy(pp.oneOf("+ - * / or not is and <= == >= != < >")) # don't match infix operators so we can run this before infix_operator_block
 code_chunk_cant_infix.setName("code_chunk_cant_infix")
 code_chunk <<= code_chunk_cant_infix | infix_operator_block
 
 # command/variable
 command_start = pp.Suppress("{{" + ~pp.FollowedBy("!") + pp.Optional("~"))
-simple_command_start = pp.Suppress("{{" + ~pp.FollowedBy("!") + pp.Optional("~")) + ~pp.FollowedBy(pp.one_of("# / >"))
+simple_command_start = pp.Suppress("{{" + ~pp.FollowedBy("!") + pp.Optional("~")) + ~pp.FollowedBy(pp.oneOf("# / >"))
 command = SavedText(pp.Group(simple_command_start + enclosed_code_chunk + command_end)("command"))
 
 # partial
