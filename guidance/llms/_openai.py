@@ -24,7 +24,7 @@ def prompt_to_messages(prompt):
 
     assert prompt.endswith("<|im_start|>assistant\n"), "When calling OpenAI chat models you must generate only directly inside the assistant role! The OpenAI API does not currently support partial assistant prompting."
 
-    pattern = r'<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)'
+    pattern = r'<\|im_start\|>(\w+)\n(.*?)(?=<\|im_end\|>|$)'
     matches = re.findall(pattern, prompt, re.DOTALL)
 
     if not matches:
@@ -32,8 +32,8 @@ def prompt_to_messages(prompt):
 
     for match in matches:
         role, content = match
-        content = content.strip() # should we do this?
-        messages.append({'role': role, 'content': content})
+        if len(content) > 0: # only add non-empty messages (OpenAI does not support empty messages anyway)
+            messages.append({'role': role, 'content': content})
 
     return messages
 
@@ -57,16 +57,6 @@ def add_text_to_chat_mode(chat_mode):
         for c in chat_mode['choices']:
             c['text'] = c['message']['content']
         return chat_mode
-
-# model that need to use the chat completion API
-chat_models = [
-    "gpt-4",
-    "gpt-4-32k",
-    "gpt-4-0314",
-    "gpt-4-32k-0314",
-    "gpt-3.5-turbo",
-    "gpt-3.5-turbo-0301"
-]
 
 class OpenAI(LLM):
     llm_name: str = "openai"
@@ -103,7 +93,9 @@ class OpenAI(LLM):
 
         # auto detect chat completion mode
         if chat_mode == "auto":
-            if model in chat_models:
+            # parse to determin if the model need to use the chat completion API
+            chat_model_pattern = r'^(gpt-3\.5-turbo|gpt-4)(-\d+k)?(-\d{4})?$'
+            if re.match(chat_model_pattern, model):
                 chat_mode = True
             else:
                 chat_mode = False
