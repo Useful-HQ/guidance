@@ -1,7 +1,7 @@
 from typing import Any
 import pyparsing as pp
 
-pp.ParserElement.enable_packrat()
+pp.ParserElement.enablePackrat()
 # pp.enable_diag(pp.Diagnostics.enable_debug_on_named_expressions)
 # pp.autoname_elements()
 
