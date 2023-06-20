@@ -33,7 +33,7 @@ setup(
         "gptcache",
         "openai>=0.27",
         "anthropic",
-        "pyparsing>=3.1.0",
+        "pyparsing",
         "pygtrie",
         "platformdirs",
         "tiktoken>=0.3",
