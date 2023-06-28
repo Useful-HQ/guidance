@@ -1,7 +1,7 @@
 import os
 
 import diskcache
-import platformdirs
+import tempfile
 
 from guidance.llms.caches import Cache
 
@@ -11,7 +11,7 @@ class DiskCache(Cache):
     def __init__(self, llm_name: str):
         self._diskcache = diskcache.Cache(
             os.path.join(
-                platformdirs.user_cache_dir("guidance"), f"_{llm_name}.diskcache"
+                tempfile.gettempdir(), "guidance", f"_{llm_name}.diskcache"
             )
         )
 
