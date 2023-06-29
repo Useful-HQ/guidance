@@ -79,7 +79,7 @@ class Anthropic(LLM):
             except:
                 pass
 
-        self._tokenizer = anthropic.get_tokenizer()
+        self._tokenizer = anthropic.Client.get_tokenizer(None)
         self.model_name = model
         self.caching = caching
         self.max_retries = max_retries
@@ -91,7 +91,7 @@ class Anthropic(LLM):
         self.current_time = time.time()
         self.call_history = collections.deque()
         self.temperature = temperature
-        self.client = anthropic.Client(self.api_key)
+        self.client = anthropic.AsyncAnthropic(api_key=self.api_key)
         self.caller = self._library_call
         self.chat_mode = chat_mode
 
@@ -243,15 +243,15 @@ class Anthropic(LLM):
 
         if kwargs["stream"]:
             session = aiohttp.ClientSession()
-            response = self._rest_stream_handler(await self.client.acompletion_stream(**kwargs), session)
+            response = self._rest_stream_handler(await self.client.completions.create(**kwargs), session)
             return response
         else:
-            response = await self.client.acompletion(**kwargs)
-            return {"choices": [{"text": response["completion"]}]}
+            response = await self.client.completions.create(**kwargs)
+            return {"choices": [{"text": response.completion}]}
 
     async def _rest_stream_handler(self, responses, session):
         async for response in responses:
-            yield {"choices": [{"text": response["completion"]}]}
+            yield {"choices": [{"text": response.completion}]}
     async def _close_response_and_session(self, response, session):
         await response.release()
         await session.close()
@@ -343,13 +343,11 @@ class AnthropicSession(LLMSession):
                         "max_tokens_to_sample": max_tokens,
                         "temperature": temperature,
                         "top_p": top_p,
-                        "n": n,
-                        "stop": stop,
-                        "logprobs": logprobs,
-                        "echo": echo,
+                        "stop_sequences": stop,
                         "stream": stream,
                         **completion_kwargs
                     }
+                    call_args = {k: v for k, v in call_args.items() if v is not None}
                     if logit_bias is not None:
                         call_args["logit_bias"] = {str(k): v for k, v in
                                                    logit_bias.items()}  # convert keys to strings since that's the open ai api's format
