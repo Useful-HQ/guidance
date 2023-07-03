@@ -1,3 +1,5 @@
+import random
+
 import aiohttp
 import anthropic
 import os
@@ -355,7 +357,7 @@ class AnthropicSession(LLMSession):
 
                 except anthropic.APIError as e:
                     print(e) #TODO @daniel review the expcetion types
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(3*fail_count + random.randint(0, 3*fail_count))
                     try_again = True
                     fail_count += 1
 
