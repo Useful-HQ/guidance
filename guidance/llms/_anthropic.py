@@ -357,7 +357,7 @@ class AnthropicSession(LLMSession):
 
                 except anthropic.APIError as e:
                     print(e) #TODO @daniel review the expcetion types
-                    await asyncio.sleep(3*fail_count + random.randint(0, 3*fail_count))
+                    await asyncio.sleep(3 + 3*fail_count + random.randint(0, 3*fail_count + 5))
                     try_again = True
                     fail_count += 1
 
