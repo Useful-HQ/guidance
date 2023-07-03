@@ -353,7 +353,7 @@ class AnthropicSession(LLMSession):
                                                    logit_bias.items()}  # convert keys to strings since that's the open ai api's format
                     out = await self.llm.caller(**call_args)
 
-                except anthropic.ApiException as e:
+                except anthropic.APIError as e:
                     print(e) #TODO @daniel review the expcetion types
                     await asyncio.sleep(3)
                     try_again = True
