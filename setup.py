@@ -31,9 +31,9 @@ setup(
     install_requires=[
         "diskcache",
         "gptcache",
-        "openai>=0.27",
+        "openai>=0.27.8",
         "anthropic==0.3.4",
-        "pyparsing",
+        "pyparsing>=3.0.0",
         "pygtrie",
         "platformdirs",
         "tiktoken>=0.3",
