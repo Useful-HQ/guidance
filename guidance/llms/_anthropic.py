@@ -245,9 +245,9 @@ class Anthropic(LLM):
             kwargs["prompt"] = kwargs["prompt"] + anthropic.AI_PROMPT
 
         if kwargs["stream"]:
-            async with self.client.completions.create(**kwargs) as resp:
-                response = self._rest_stream_handler(resp)
-                return response
+            resp = await self.client.completions.create(**kwargs)
+            response = self._rest_stream_handler(resp)
+            return response
         else:
             response = await self.client.completions.create(**kwargs)
             return {"choices": [{"text": response.completion}]}
