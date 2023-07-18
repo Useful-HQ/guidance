@@ -245,14 +245,14 @@ class Anthropic(LLM):
             kwargs["prompt"] = kwargs["prompt"] + anthropic.AI_PROMPT
 
         if kwargs["stream"]:
-            session = aiohttp.ClientSession()
-            response = self._rest_stream_handler(await self.client.completions.create(**kwargs), session)
-            return response
+            async with self.client.completions.create(**kwargs) as resp:
+                response = self._rest_stream_handler(resp)
+                return response
         else:
             response = await self.client.completions.create(**kwargs)
             return {"choices": [{"text": response.completion}]}
 
-    async def _rest_stream_handler(self, responses, session):
+    async def _rest_stream_handler(self, responses):
         async for response in responses:
             yield {"choices": [{"text": response.completion}]}
     async def _close_response_and_session(self, response, session):
