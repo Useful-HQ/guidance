@@ -32,7 +32,7 @@ setup(
         "diskcache",
         "gptcache",
         "openai>=0.27.8",
-        "anthropic==0.3.8",
+        "anthropic==0.10.0",
         "pyparsing>=3.0.0",
         "pygtrie",
         "platformdirs",
@@ -42,6 +42,7 @@ setup(
         "requests",
         "numpy",
         "aiohttp",
+        "typing_extensions==4.9.0"
     ],
     extras_require={
         'docs': [
